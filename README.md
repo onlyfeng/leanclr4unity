@@ -20,7 +20,7 @@ LeanCLR 是一个面向全平台的精练的 CLR（Common Language Runtime）实
 ### 支持的Unity版本和平台
 
 - 暂时支持Windows平台Unity Editor，后续版本会支持MacOS和linux
-- 支持Unity 2019- Unity 6000 所有版本（含LTS和非LTS版本）
+- 支持Unity 2021 - 6000 所有版本（含LTS和非LTS版本）
 - 支持团结引擎所有版本
 - 支持WebGL和MiniGame平台
 - 部分支持其他平台（如Win64），但仅支持单线程，并且**可能**需要手动修改相应平台的构建工程文件（如Unity 6000 发布Win64平台时需要在Il2CppOutputProject.vcxproj文件中移除il2cpp的命令行参数`--static-lib-il2-cpp`，否则启动时会有 `il2cpp init failed`错误。）
