@@ -53,11 +53,10 @@ Open the project settings page via **`LeanCLR/Settings...`** (or **Edit > Projec
 
 #### Lean AOT (`leanAOTSettings`)
 
-Options for **Lean AOT (leanaot)** during packaging. If you leave the nested object unset, built-in defaults apply (for example `aotPercent` defaults to 100, layout validation off, no rule file).
+Options for **Lean AOT (leanaot)** during packaging. If you leave the nested object unset, built-in defaults apply (layout validation off, no rule files).
 
-- **`aotPercent`**: AOT-related ratio (integer, default 100). It tunes how Lean AOT behaves during packaging.
 - **`layoutValidation`**: Enables layout-related checks to catch inconsistencies with native layouts earlier; turn on mainly for diagnostics or stricter validation workflows.
-- **`ruleFile`**: Optional path to an AOT rule file (for example XML) for finer control over what gets AOT-compiled; leave empty to skip an external rules file.
+- **`ruleFiles`**: Configures the list of **AOT rule file** paths (multiple entries allowed). For rule file format, elements, and semantics, see **[`Docs~/aot-rule-file.md`](./Docs~/aot-rule-file.md)** in this package. Each path may be relative to the **Unity project root** (the folder that contains `Assets`) or an absolute path on disk. Missing files fail the build at preprocess time. Leave the list empty or unset to skip external rule files.
 
 ### Build
 

@@ -54,11 +54,10 @@ LeanCLR 是一个面向全平台的精练的 CLR（Common Language Runtime）实
 
 #### Lean AOT（`leanAOTSettings`）
 
-打包阶段 **Lean AOT（leanaot）** 相关选项。若未展开配置，则使用内置默认值（例如 `aotPercent` 默认为 100，布局校验关闭，规则文件为空）。
+打包阶段 **Lean AOT（leanaot）** 相关选项。若未展开配置，则使用内置默认值（布局校验关闭，规则文件列表为空）。
 
-- **`aotPercent`**：AOT 相关比例参数（整数，默认 100），用于调节打包时 Lean AOT 的生成策略。
 - **`layoutValidation`**：是否开启类型布局等相关校验，便于在开发期尽早发现与原生布局不一致的问题；一般仅在需要排查或严格校验时开启。
-- **`ruleFile`**：可选的 AOT 规则文件路径（如 XML），用于按规则精细控制哪些代码走 AOT 等；不填则表示不使用外部规则文件。
+- **`ruleFiles`**：用于配置 **AOT 规则文件**路径列表（可多个）。规则文件的格式、节点与语义说明见包内文档 **[`Docs~/aot-rule-file.md`](./Docs~/aot-rule-file.md)**。每项路径可为相对 **Unity 工程根目录**（与 `Assets` 同级）的相对路径，或本机绝对路径；打包前会校验文件存在，不存在则构建失败。留空或不配置列表即不使用外部规则文件。
 
 ### 构建
 
