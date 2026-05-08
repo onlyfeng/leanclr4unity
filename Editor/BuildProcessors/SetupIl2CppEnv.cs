@@ -92,7 +92,7 @@ namespace LeanCLR.BuildProcessors
                 }
             }
 
-            AppendLazyLoadAssemblyExcludeArgs(sb, Settings.Instance.lazyLoadAssemblyNames);
+            AppendLazyLoadAssemblyExcludeArgs(sb, aot.lazyLoadAssemblyNames);
 
             return sb.ToString();
         }

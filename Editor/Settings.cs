@@ -30,8 +30,14 @@ namespace LeanCLR
     [Serializable]
     public class LeanAOTSettings
     {
+        [Tooltip("When enabled, Lean AOT runs extra layout-related validation to catch native/managed layout mismatches earlier (diagnostics / strict workflows).")]
         public bool layoutValidation;
+
+        [Tooltip("Paths to AOT rule files for Lean AOT (project-root-relative or absolute). Missing files fail the build. See Docs~/aot-rule-file.md in this package.")]
         public string[] ruleFiles;
+
+        [Tooltip("Assemblies excluded from global-metadata.dat; load manually at runtime (e.g. Assembly.Load). They still participate in AOT compilation.")]
+        public string[] lazyLoadAssemblyNames;
     }
 
     public class Settings : ScriptableObject
@@ -41,9 +47,6 @@ namespace LeanCLR
 
         [Tooltip("LeanAOT Settings")]
         public LeanAOTSettings leanAOTSettings;
-
-        [Tooltip("Lazy loaded assemblies not be added to global-metadata.dat at build time. You have to load them manually by Assembly.Load(byte[]) in runtime.")]
-        public string[] lazyLoadAssemblyNames;
 
         private static Settings s_Instance;
 
