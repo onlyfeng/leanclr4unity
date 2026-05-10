@@ -27,19 +27,12 @@ namespace
 RtResultVoid fn_interpreter_invoker(metadata::RtManagedMethodPointer method_pointer, const metadata::RtMethodInfo* method, const interp::RtStackObject* params,
                                     interp::RtStackObject* ret) noexcept
 {
-    DECLARING_AND_UNWRAP_OR_RET_ERR_ON_FAIL(const interp::RtStackObject*, result, interp::Interpreter::execute(method, params));
-    if (method->ret_stack_object_size > 0)
+    if (method_pointer != method->method_ptr)
     {
-        std::memcpy(ret, result, method->ret_stack_object_size * sizeof(interp::RtStackObject));
+        assert(Class::is_value_type(method->parent));
+        assert(method_pointer == method->virtual_method_ptr);
+        const_cast<interp::RtStackObject*>(params)[0].obj = params[0].obj + 1;
     }
-    RET_VOID_OK();
-}
-
-// Interpreter virtual adjust thunk invoker
-RtResultVoid fn_interpreter_virtual_adjust_thunk_invoker(metadata::RtManagedMethodPointer method_pointer, const metadata::RtMethodInfo* method,
-                                                         const interp::RtStackObject* params, interp::RtStackObject* ret) noexcept
-{
-    const_cast<interp::RtStackObject*>(params)[0].obj = params[0].obj + 1;
     DECLARING_AND_UNWRAP_OR_RET_ERR_ON_FAIL(const interp::RtStackObject*, result, interp::Interpreter::execute(method, params));
     if (method->ret_stack_object_size > 0)
     {
@@ -124,6 +117,11 @@ RtResultVoid fn_not_implemented_invoker(metadata::RtManagedMethodPointer method_
 
 // Method pointer placeholder
 void fn_not_implemented_method_pointer() noexcept
+{
+    // Placeholder - would panic in debug builds
+}
+
+void fn_not_implemented_virtual_method_pointer() noexcept
 {
     // Placeholder - would panic in debug builds
 }
@@ -243,7 +241,7 @@ RtResult<InvokeTypeAndMethod> Shim::get_invoker(const metadata::RtMethodInfo* me
         std::optional<metadata::RtAotMethodImplData> aot_data = metadata::AotModule::find_aot_method_impl(method);
         if (aot_data.has_value())
         {
-            RET_OK(InvokeTypeAndMethod(RtInvokerType::Aot, aot_data->invoke_method_ptr, aot_data->virtual_invoke_method_ptr));
+            RET_OK(InvokeTypeAndMethod(RtInvokerType::Aot, aot_data->invoke_method_ptr));
         }
 
         if (Method::is_internal_call(method))
@@ -269,10 +267,7 @@ RtResult<InvokeTypeAndMethod> Shim::get_invoker(const metadata::RtMethodInfo* me
                 RET_OK(InvokeTypeAndMethod(RtInvokerType::PInvoke, fn_not_implemented_pinvoke_invoker));
             }
         }
-
-        auto virtual_invoker =
-            Method::is_static(method) || !Class::is_value_type(method->parent) ? fn_interpreter_invoker : fn_interpreter_virtual_adjust_thunk_invoker;
-        RET_OK(InvokeTypeAndMethod(RtInvokerType::Interpreter, fn_interpreter_invoker, virtual_invoker));
+        RET_OK(InvokeTypeAndMethod(RtInvokerType::Interpreter, fn_interpreter_invoker));
     }
 
     case metadata::RtMethodImplAttribute::Native:
@@ -321,7 +316,7 @@ RtResult<InvokeTypeAndMethod> Shim::get_invoker(const metadata::RtMethodInfo* me
 }
 
 // Get method pointer (for native/unmanaged methods)
-metadata::RtManagedMethodPointer Shim::get_method_pointer(const metadata::RtMethodInfo* method)
+MethodAndVirtualMethod Shim::get_method_pointer(const metadata::RtMethodInfo* method)
 {
     const metadata::RtAotModuleData* aotModuleData = method->parent->image->get_aot_module_data();
     if (aotModuleData != nullptr)
@@ -329,11 +324,14 @@ metadata::RtManagedMethodPointer Shim::get_method_pointer(const metadata::RtMeth
         std::optional<metadata::RtAotMethodImplData> aot_data = metadata::AotModule::find_aot_method_impl(method);
         if (aot_data.has_value())
         {
-            return aot_data->method_ptr;
+            return MethodAndVirtualMethod(aot_data->method_ptr, aot_data->virtual_method_ptr);
         }
     }
-    // Placeholder - returns not implemented method pointer
-    return reinterpret_cast<metadata::RtManagedMethodPointer>(fn_not_implemented_method_pointer);
+    metadata::RtManagedMethodPointer method_pointer = reinterpret_cast<metadata::RtManagedMethodPointer>(fn_not_implemented_method_pointer);
+    metadata::RtManagedMethodPointer virtual_method_pointer = reinterpret_cast<metadata::RtManagedMethodPointer>(
+        Method::is_static(method) || !Class::is_value_type(method->parent) ? fn_not_implemented_method_pointer : fn_not_implemented_virtual_method_pointer);
+
+    return MethodAndVirtualMethod(method_pointer, virtual_method_pointer);
 }
 
 } // namespace vm
